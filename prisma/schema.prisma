@@ -1,0 +1,148 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  PATIENT
+}
+
+enum DoctorVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum AccessRequestStatus {
+  PENDING
+  APPROVED
+  DENIED
+  EXPIRED
+}
+
+enum TreatmentStatus {
+  DRAFT
+  CONFIRMED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String?  // Optional because OAuth users might not have a password
+  name         String
+  role         Role
+  oauthId      String?  @unique // To link OAuth accounts
+  oauthProvider String? // 'google', 'apple', etc.
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  doctorProfile  DoctorProfile?
+  patientProfile PatientProfile?
+
+  // Relations
+  treatmentsAsDoctor          Treatment[]                   @relation("DoctorTreatments")
+  treatmentsAsPatient         Treatment[]                   @relation("PatientTreatments")
+  amendments                  TreatmentAmendment[]
+  accessRequestsReceived      HistoryAccessRequest[]        @relation("PatientAccessRequests")
+  accessRequestsSent          HistoryAccessRequest[]        @relation("DoctorAccessRequests")
+  auditLogs                   AuditLog[]
+  verifiedDoctors             DoctorProfile[]               @relation("AdminVerifiedDoctors")
+}
+
+model DoctorProfile {
+  id                 String                   @id @default(uuid())
+  userId             String                   @unique
+  specialization     String?
+  licenseNumber      String?                  @unique
+  verificationStatus DoctorVerificationStatus @default(PENDING)
+  verifiedById       String?
+
+  user       User  @relation(fields: [userId], references: [id])
+  verifiedBy User? @relation("AdminVerifiedDoctors", fields: [verifiedById], references: [id])
+}
+
+model PatientProfile {
+  id               String @id @default(uuid())
+  userId           String @unique
+  qrCodeIdentifier String @unique
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Treatment {
+  id          String          @id @default(uuid())
+  doctorId    String
+  patientId   String
+  condition   String?
+  symptoms    String?
+  diagnosis   String?
+  doctorNotes String?
+  status      TreatmentStatus @default(DRAFT)
+  confirmedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  doctor        User                 @relation("DoctorTreatments", fields: [doctorId], references: [id])
+  patient       User                 @relation("PatientTreatments", fields: [patientId], references: [id])
+  prescriptions Prescription[]
+  amendments    TreatmentAmendment[]
+}
+
+model Prescription {
+  id           String   @id @default(uuid())
+  treatmentId  String
+  medicineName String 
+  strength     String?
+  dosage       String?
+  frequency    String?
+  duration     String?
+  route        String?
+  instructions String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  treatment Treatment @relation(fields: [treatmentId], references: [id])
+}
+
+model TreatmentAmendment {
+  id           String   @id @default(uuid())
+  treatmentId  String
+  doctorId     String
+  previousData Json
+  newData      Json
+  reason       String?
+  createdAt    DateTime @default(now())
+
+  treatment Treatment @relation(fields: [treatmentId], references: [id])
+  doctor    User      @relation(fields: [doctorId], references: [id])
+}
+
+model HistoryAccessRequest {
+  id        String              @id @default(uuid())
+  doctorId  String
+  patientId String
+  status    AccessRequestStatus @default(PENDING)
+  expiresAt DateTime?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  doctor  User @relation("DoctorAccessRequests", fields: [doctorId], references: [id])
+  patient User @relation("PatientAccessRequests", fields: [patientId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  details   Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
