@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
 import prisma from '../utils/prisma';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { TreatmentStatus } from '@prisma/client';
@@ -8,6 +9,143 @@ import OpenAI from 'openai';
 const isDoctorVerified = async (userId: string) => {
   const profile = await prisma.doctorProfile.findUnique({ where: { userId } });
   return profile?.verificationStatus === 'APPROVED';
+};
+
+export const getProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const profile = await prisma.doctorProfile.findUnique({
+      where: { userId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    res.json(profile);
+  } catch (error) {
+    console.error('Error fetching doctor profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updateProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { name, email, specialization, licenseNumber } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({ error: 'Name and email are required' });
+    }
+
+    const existingEmailUser = await prisma.user.findFirst({
+      where: {
+        email,
+        NOT: { id: userId },
+      },
+    });
+
+    if (existingEmailUser) {
+      return res.status(400).json({ error: 'Email is already in use' });
+    }
+
+    const normalizedLicenseNumber = typeof licenseNumber === 'string' ? licenseNumber.trim() : '';
+    if (normalizedLicenseNumber) {
+      const existingLicenseDoctor = await prisma.doctorProfile.findFirst({
+        where: {
+          licenseNumber: normalizedLicenseNumber,
+          NOT: { userId },
+        },
+      });
+
+      if (existingLicenseDoctor) {
+        return res.status(400).json({ error: 'License number is already in use' });
+      }
+    }
+
+    const updatedProfile = await prisma.$transaction(async (prismaTx: any) => {
+      await prismaTx.user.update({
+        where: { id: userId },
+        data: {
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+        },
+      });
+
+      return prismaTx.doctorProfile.update({
+        where: { userId },
+        data: {
+          specialization: typeof specialization === 'string' ? specialization.trim() || null : null,
+          licenseNumber: normalizedLicenseNumber || null,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              createdAt: true,
+            },
+          },
+        },
+      });
+    });
+
+    res.json({ message: 'Profile updated successfully', profile: updatedProfile });
+  } catch (error) {
+    console.error('Error updating doctor profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updatePassword = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { passwordHash: true },
+    });
+
+    if (!user || !user.passwordHash) {
+      return res.status(400).json({ error: 'Password change is not available for this account' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newPasswordHash },
+    });
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error updating doctor password:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 export const getPatients = async (req: AuthRequest, res: Response) => {
@@ -33,14 +171,29 @@ export const getPatients = async (req: AuthRequest, res: Response) => {
     const patientMap = new Map();
     
     treatments.forEach(t => {
-      if (!patientMap.has(t.patient.id)) {
-        patientMap.set(t.patient.id, t.patient);
+      const patientId = t.patient.id;
+      if (!patientMap.has(patientId)) {
+        patientMap.set(patientId, {
+          ...t.patient,
+          treatmentsCount: 0,
+          lastVisit: null
+        });
+      }
+      const p = patientMap.get(patientId);
+      p.treatmentsCount += 1;
+      if (!p.lastVisit || new Date(t.createdAt) > new Date(p.lastVisit)) {
+        p.lastVisit = t.createdAt;
       }
     });
 
     accessRequests.forEach(ar => {
-      if (!patientMap.has(ar.patient.id)) {
-        patientMap.set(ar.patient.id, ar.patient);
+      const patientId = ar.patient.id;
+      if (!patientMap.has(patientId)) {
+        patientMap.set(patientId, {
+          ...ar.patient,
+          treatmentsCount: 0,
+          lastVisit: null
+        });
       }
     });
 
@@ -59,6 +212,31 @@ export const getPatients = async (req: AuthRequest, res: Response) => {
     res.json(patientsWithProfile);
   } catch (error) {
     console.error('Error fetching patients:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getTreatments = async (req: AuthRequest, res: Response) => {
+  try {
+    const doctorId = req.user!.id;
+    const treatments = await prisma.treatment.findMany({
+      where: { doctorId },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        prescriptions: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(treatments);
+  } catch (error) {
+    console.error('Error fetching doctor treatments:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -109,8 +287,11 @@ export const scanPatientQr = async (req: AuthRequest, res: Response) => {
     }
 
     res.json({
+      id: patientProfile.user.id,
       patientId: patientProfile.user.id,
       name: patientProfile.user.name,
+      email: patientProfile.user.email,
+      qrId: patientProfile.qrCodeIdentifier,
       qrIdentifier: patientProfile.qrCodeIdentifier
     });
   } catch (error) {

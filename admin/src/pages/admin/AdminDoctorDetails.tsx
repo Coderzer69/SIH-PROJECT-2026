@@ -42,9 +42,9 @@ const AdminDoctorDetails = () => {
     try {
       await api.patch(`/admin/doctors/${id}/verify`, { status });
       setDoctor({ ...doctor, verificationStatus: status });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to update status", err);
-      alert('Failed to update doctor status');
+      alert(err.response?.data?.error || 'Failed to update doctor status');
     } finally {
       setIsUpdating(false);
     }

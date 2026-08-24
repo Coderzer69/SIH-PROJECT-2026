@@ -143,7 +143,7 @@ export default function LandingPage() {
       </section>
 
       {/* How it Works Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-[90rem] mx-auto text-center">
+      <section id="how-it-works" className="py-24 px-4 sm:px-6 lg:px-8 max-w-[90rem] mx-auto text-center">
         <div className="text-emerald-800 font-bold text-sm tracking-wider uppercase mb-3">How It Works</div>
         <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple steps. <span className="text-emerald-700">Smarter care.</span></h2>
         <p className="text-gray-600 mb-16 max-w-2xl mx-auto text-lg">From the clinic to your phone – your treatment journey in a few simple steps.</p>
@@ -182,7 +182,7 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="flex flex-col xl:flex-row gap-8 lg:gap-12">
           {/* For Patients */}
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-row items-center overflow-hidden relative flex-1">
+          <div id="for-patients" className="bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-row items-center overflow-hidden relative flex-1">
             <div className="p-5 sm:p-6 lg:p-5 xl:p-8 flex-1 z-10 relative">
               <div className="flex items-center gap-2 text-emerald-700 font-bold mb-3 md:mb-5 text-base md:text-lg">
                 <UserCircle className="w-5 h-5" />
@@ -216,7 +216,7 @@ export default function LandingPage() {
           </div>
 
           {/* For Doctors */}
-          <div className="bg-[#f2f9f5] rounded-3xl shadow-sm border border-emerald-100 flex flex-row items-center overflow-hidden relative flex-1">
+          <div id="for-doctors" className="bg-[#f2f9f5] rounded-3xl shadow-sm border border-emerald-100 flex flex-row items-center overflow-hidden relative flex-1">
             <div className="p-5 sm:p-6 lg:p-5 xl:p-8 flex-1 z-10 relative">
               <div className="flex items-center gap-2 text-emerald-800 font-bold mb-3 md:mb-5 text-base md:text-lg">
                 <Stethoscope className="w-5 h-5" />
@@ -252,8 +252,8 @@ export default function LandingPage() {
       </section>
 
       {/* Privacy Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 lg:p-12 shadow-sm border border-gray-100 flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
+      <section id="security" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+        <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 lg:p-12 shadow-sm border border-gray-100 flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
           <div className="flex-1">
             <div className="text-emerald-700 font-bold text-sm tracking-wider uppercase mb-4">Your Privacy, Your Choice</div>
             <h2 className="text-4xl font-bold text-gray-900 mb-6">You control who sees your medical history.</h2>
@@ -308,7 +308,7 @@ export default function LandingPage() {
 
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="bg-[#0b3b2c] rounded-3xl p-8 sm:p-12 lg:p-16 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-10">
+        <div className="bg-[#0b3b2c] rounded-3xl p-8 sm:p-12 lg:p-16 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-10">
           <div className="max-w-xl">
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">Your next doctor's visit can be simpler.</h2>
             <p className="text-emerald-100 text-lg">
@@ -329,7 +329,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <Footer />
+      <div id="about-us">
+        <Footer />
+      </div>
     </div>
   );
 }

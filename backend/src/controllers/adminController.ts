@@ -40,12 +40,27 @@ export const verifyDoctor = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Invalid verification status' });
     }
 
+    const actingAdmin = req.user?.id
+      ? await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: { id: true },
+      })
+      : null;
+
+    const updateData: {
+      verificationStatus: DoctorVerificationStatus;
+      verifiedById?: string | null;
+    } = {
+      verificationStatus: status,
+    };
+
+    if (actingAdmin?.id) {
+      updateData.verifiedById = actingAdmin.id;
+    }
+
     const doctor = await prisma.doctorProfile.update({
       where: { id: doctorProfileId },
-      data: {
-        verificationStatus: status,
-        verifiedById: req.user?.id, // Admin ID who performed the action
-      },
+      data: updateData,
     });
 
     res.json({ message: `Doctor status updated to ${status}`, doctor });

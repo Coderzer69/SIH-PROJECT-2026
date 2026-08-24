@@ -11,6 +11,18 @@ const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID
 );
 
+const buildAuthUser = (user: any) => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  ...(user.doctorProfile && {
+    specialization: user.doctorProfile.specialization || undefined,
+    verificationStatus: user.doctorProfile.verificationStatus,
+    documentsSubmitted: !!user.doctorProfile.verificationDocumentUrl,
+  }),
+});
+
 // ==================== REGISTER ====================
 
 export const register = async (req: Request, res: Response) => {
@@ -91,27 +103,16 @@ export const register = async (req: Request, res: Response) => {
         });
       }
 
-      return newUser;
+      return prismaTx.user.findUnique({
+        where: { id: newUser.id },
+        include: { doctorProfile: true },
+      });
     });
-
-    let verificationStatus;
-    let documentsSubmitted = false;
-    if (role === Role.DOCTOR) {
-      const doc = await prisma.doctorProfile.findUnique({ where: { userId: user.id } });
-      verificationStatus = doc?.verificationStatus;
-      documentsSubmitted = !!doc?.verificationDocumentUrl;
-    }
 
     return res.status(201).json({
       message: 'User registered successfully',
-      userId: user.id,
-      user: {
-        id: user.id,
-        name: user.name,
-        role: user.role,
-        ...(verificationStatus && { verificationStatus }),
-        ...(role === Role.DOCTOR && { documentsSubmitted })
-      }
+      userId: user!.id,
+      user: buildAuthUser(user),
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -170,15 +171,7 @@ export const login = async (req: Request, res: Response) => {
 
     return res.json({
       token,
-      user: {
-        id: user.id,
-        name: user.name,
-        role: user.role,
-        ...(user.doctorProfile && {
-          verificationStatus: user.doctorProfile.verificationStatus,
-          documentsSubmitted: !!user.doctorProfile.verificationDocumentUrl
-        })
-      },
+      user: buildAuthUser(user),
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -339,15 +332,7 @@ export const oauthLogin = async (req: Request, res: Response) => {
 
     return res.json({
       token,
-      user: {
-        id: user.id,
-        name: user.name,
-        role: user.role,
-        ...(user.doctorProfile && {
-          verificationStatus: user.doctorProfile.verificationStatus,
-          documentsSubmitted: !!user.doctorProfile.verificationDocumentUrl
-        })
-      },
+      user: buildAuthUser(user),
     });
   } catch (error) {
     console.error('OAuth Login error:', error);

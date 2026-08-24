@@ -8,7 +8,9 @@ import {
 import NewTreatment from '../components/NewTreatment';
 import DoctorMedicalHistory from '../components/DoctorMedicalHistory';
 import DoctorHistoryRequests from '../components/DoctorHistoryRequests';
+import DoctorProfileSettings from '../components/DoctorProfileSettings';
 import ScannerModal from '../components/ScannerModal';
+import DoctorPatients from '../components/DoctorPatients';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
 
@@ -38,7 +40,7 @@ export default function DoctorDashboard() {
   };
 
   useEffect(() => {
-    if (user?.verificationStatus === 'APPROVED' && (activeTab === 'dashboard' || activeTab === 'history-requests' || activeTab === 'patients')) {
+    if (user?.verificationStatus === 'APPROVED' && (activeTab === 'dashboard' || activeTab === 'history-requests' || activeTab === 'history' || activeTab === 'patients')) {
       fetchDashboardData();
     }
   }, [activeTab, user?.verificationStatus]);
@@ -47,6 +49,12 @@ export default function DoctorDashboard() {
 
   const [treatments, setTreatments] = useState<any[]>([]);
   const pendingRequests = accessRequests.filter(r => r.status === 'PENDING');
+  const approvedHistoryRequests = accessRequests.filter(
+    (request) =>
+      request.status === 'APPROVED' &&
+      request.patient &&
+      (!request.expiresAt || new Date(request.expiresAt) > new Date())
+  );
 
   // Derived stat counts from real data
   const totalTreatments = treatments.length;
@@ -260,13 +268,75 @@ export default function DoctorDashboard() {
                   fetchDashboardData();
                 }}
               />
+            ) : activeTab === 'profile' || activeTab === 'settings' ? (
+              <DoctorProfileSettings
+                defaultSection={activeTab === 'settings' ? 'settings' : 'profile'}
+                onBack={() => setActiveTab('dashboard')}
+              />
             ) : activeTab === 'history' ? (
+              activePatient ? (
               <DoctorMedicalHistory
                 patient={activePatient}
                 onBack={() => {
                   setActiveTab('history-requests');
                   setActivePatient(null);
                 }}
+              />
+              ) : (
+                <div className="max-w-[900px] mx-auto">
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+                    <div className="mb-6">
+                      <h1 className="text-2xl font-bold text-gray-900 mb-2">Treatment History</h1>
+                      <p className="text-gray-500 text-[14.5px]">
+                        Select a patient with approved access to view their treatment history.
+                      </p>
+                    </div>
+
+                    {approvedHistoryRequests.length === 0 ? (
+                      <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center">
+                        <p className="text-gray-600 font-medium mb-3">No approved history access is available right now.</p>
+                        <button
+                          onClick={() => setActiveTab('history-requests')}
+                          className="px-4 py-2 bg-[#0b5c46] text-white font-bold text-[14px] rounded-lg hover:bg-[#094d3a] transition-colors"
+                        >
+                          View History Requests
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-4">
+                        {approvedHistoryRequests.map((request: any) => (
+                          <button
+                            key={request.id}
+                            onClick={() => setActivePatient(request.patient)}
+                            className="w-full text-left border border-gray-100 rounded-xl p-4 hover:border-[#0b5c46]/30 hover:bg-[#f8fdfa] transition-colors"
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-11 h-11 rounded-full bg-[#e6f4ef] text-[#0b5c46] font-bold text-[14px] flex items-center justify-center shrink-0 uppercase">
+                                  {request.patient?.name?.substring(0, 2) || 'PT'}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[15px] font-bold text-gray-900 truncate">
+                                    {request.patient?.name || 'Unknown Patient'}
+                                  </p>
+                                  <p className="text-[13px] text-gray-500">
+                                    Approved on {new Date(request.updatedAt || request.createdAt).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                              <span className="text-[13px] font-bold text-[#0b5c46] shrink-0">View history</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            ) : activeTab === 'patients' ? (
+              <DoctorPatients 
+                patients={patients} 
+                onAddPatient={() => setShowScanner(true)}
               />
             ) : (
               <>
@@ -297,55 +367,52 @@ export default function DoctorDashboard() {
                   </div>
                 )}
 
-                {/* Top Cards Section */}
-                <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mb-6 sm:mb-8">
-                  <div
-                    onClick={() => setShowScanner(true)}
-                    className="flex-1 bg-[#0b5c46] rounded-2xl p-6 sm:p-8 flex items-center justify-between text-white shadow-sm relative overflow-hidden cursor-pointer hover:bg-[#094d3a] transition-colors"
-                  >
-                    <div className="z-10 max-w-[200px]">
-                      <h3 className="text-[17px] sm:text-[19px] font-bold mb-2 sm:mb-3">Scan Patient QR Code</h3>
-                      <p className="text-emerald-50/80 text-[13px] sm:text-[14px] leading-relaxed">
-                        Identify a patient and start a new treatment
-                      </p>
+                {activeTab !== 'history-requests' && (
+                  <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mb-6 sm:mb-8">
+                    <div
+                      onClick={() => setShowScanner(true)}
+                      className="flex-1 bg-[#0b5c46] rounded-2xl p-6 sm:p-8 flex items-center justify-between text-white shadow-sm relative overflow-hidden cursor-pointer hover:bg-[#094d3a] transition-colors"
+                    >
+                      <div className="z-10 max-w-[200px]">
+                        <h3 className="text-[17px] sm:text-[19px] font-bold mb-2 sm:mb-3">Scan Patient QR Code</h3>
+                        <p className="text-emerald-50/80 text-[13px] sm:text-[14px] leading-relaxed">
+                          Identify a patient and start a new treatment
+                        </p>
+                      </div>
+                      <div className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px] rounded-full border border-emerald-400/30 flex items-center justify-center z-10 shrink-0">
+                        <ScanLine className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-300" />
+                      </div>
+                      <div className="absolute right-[-40px] bottom-[-40px] w-[200px] h-[200px] bg-emerald-500/10 rounded-full blur-2xl"></div>
                     </div>
-                    <div className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px] rounded-full border border-emerald-400/30 flex items-center justify-center z-10 shrink-0">
-                      <ScanLine className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-300" />
-                    </div>
-                    <div className="absolute right-[-40px] bottom-[-40px] w-[200px] h-[200px] bg-emerald-500/10 rounded-full blur-2xl"></div>
-                  </div>
 
-                  {/* Right Cards: Overview */}
-                  <div className="flex-[1.8] bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
-                    <h3 className="text-[15px] font-bold text-gray-900 mb-4">Today's Overview</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                      {/* Stat 1 */}
-                      <div className="bg-[#fcfdfd] border border-gray-50 rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center text-center">
-                        <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-2">
-                          <FileCheck className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] text-emerald-600" />
-                          <span className="text-[20px] sm:text-[22px] font-bold text-gray-900">{totalTreatments}</span>
+                    <div className="flex-[1.8] bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+                      <h3 className="text-[15px] font-bold text-gray-900 mb-4">Today's Overview</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                        <div className="bg-[#fcfdfd] border border-gray-50 rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center text-center">
+                          <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-2">
+                            <FileCheck className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] text-emerald-600" />
+                            <span className="text-[20px] sm:text-[22px] font-bold text-gray-900">{totalTreatments}</span>
+                          </div>
+                          <p className="text-[11px] sm:text-[12.5px] font-medium text-gray-500">Treatments<br />Created</p>
                         </div>
-                        <p className="text-[11px] sm:text-[12.5px] font-medium text-gray-500">Treatments<br />Created</p>
-                      </div>
-                      {/* Stat 2 */}
-                      <div className="bg-[#fcfdfd] border border-gray-50 rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center text-center">
-                        <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-2">
-                          <UserCheck className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] text-blue-500" />
-                          <span className="text-[20px] sm:text-[22px] font-bold text-gray-900">{confirmedTreatments}</span>
+                        <div className="bg-[#fcfdfd] border border-gray-50 rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center text-center">
+                          <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-2">
+                            <UserCheck className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] text-blue-500" />
+                            <span className="text-[20px] sm:text-[22px] font-bold text-gray-900">{confirmedTreatments}</span>
+                          </div>
+                          <p className="text-[11px] sm:text-[12.5px] font-medium text-gray-500">Confirmed<br />Treatments</p>
                         </div>
-                        <p className="text-[11px] sm:text-[12.5px] font-medium text-gray-500">Confirmed<br />Treatments</p>
-                      </div>
-                      {/* Stat 3 */}
-                      <div className="bg-[#fcfdfd] border border-gray-50 rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center text-center">
-                        <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-2">
-                          <FileEdit className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] text-sky-500" />
-                          <span className="text-[20px] sm:text-[22px] font-bold text-gray-900">{draftTreatments}</span>
+                        <div className="bg-[#fcfdfd] border border-gray-50 rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center text-center">
+                          <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-2">
+                            <FileEdit className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] text-sky-500" />
+                            <span className="text-[20px] sm:text-[22px] font-bold text-gray-900">{draftTreatments}</span>
+                          </div>
+                          <p className="text-[11px] sm:text-[12.5px] font-medium text-gray-500">Draft<br />Treatments</p>
                         </div>
-                        <p className="text-[11px] sm:text-[12.5px] font-medium text-gray-500">Draft<br />Treatments</p>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {activeTab === 'history-requests' ? (
                   <DoctorHistoryRequests

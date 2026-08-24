@@ -38,7 +38,7 @@ export default function PatientDashboard() {
   };
 
   useEffect(() => {
-    if (activeTab === 'home') {
+    if (['home', 'records', 'history', 'profile'].includes(activeTab)) {
       fetchDashboardData();
     }
   }, [activeTab]);

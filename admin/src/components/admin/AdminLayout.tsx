@@ -1,11 +1,11 @@
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  UserSquare2, 
-  Activity, 
-  FileClock, 
-  ShieldAlert, 
+import {
+  LayoutDashboard,
+  Users,
+  UserSquare2,
+  Activity,
+  FileClock,
+  ShieldAlert,
   LogOut,
   ShieldCheck
 } from 'lucide-react';
@@ -67,11 +67,10 @@ const AdminLayout = () => {
               <NavLink
                 key={item.name}
                 to={item.href}
-                className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActive 
-                    ? 'bg-emerald-500/10 text-emerald-400' 
+                className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                    ? 'bg-emerald-500/10 text-emerald-400'
                     : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
-                }`}
+                  }`}
               >
                 <item.icon className="w-5 h-5 shrink-0" strokeWidth={isActive ? 2.5 : 2} />
                 <span className="flex-1">{item.name}</span>
@@ -82,7 +81,7 @@ const AdminLayout = () => {
 
         {/* Logout */}
         <div className="p-4 mt-auto border-t border-white/10">
-          <button 
+          <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-3 w-full rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
           >

@@ -5,12 +5,26 @@ import { HeartPulse, Menu, X } from 'lucide-react';
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setMobileOpen(false);
+    if (id === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    const element = document.getElementById(id);
+    if (element) {
+      const top = element.getBoundingClientRect().top + window.scrollY - 80; // account for navbar height
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
+
   return (
     <nav className="fixed w-full bg-white/90 backdrop-blur-sm z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 sm:h-20">
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={(e) => { e.preventDefault(); scrollToSection(e as any, 'home'); }}>
             <div className="bg-emerald-600 p-2 rounded-xl">
               <HeartPulse className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
@@ -22,12 +36,11 @@ export default function Navbar() {
 
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
-            <Link to="#" className="text-sm font-medium text-emerald-600 border-b-2 border-emerald-600 pb-1">Home</Link>
-            <Link to="#" className="text-sm font-medium text-gray-600 hover:text-gray-900">How It Works</Link>
-            <Link to="#" className="text-sm font-medium text-gray-600 hover:text-gray-900">For Patients</Link>
-            <Link to="#" className="text-sm font-medium text-gray-600 hover:text-gray-900">For Doctors</Link>
-            <Link to="#" className="text-sm font-medium text-gray-600 hover:text-gray-900">Security</Link>
-            <Link to="#" className="text-sm font-medium text-gray-600 hover:text-gray-900">About Us</Link>
+            <a href="#home" onClick={(e) => scrollToSection(e, 'home')} className="text-sm font-medium text-emerald-600 border-b-2 border-emerald-600 pb-1">Home</a>
+            <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="text-sm font-medium text-gray-600 hover:text-gray-900">How It Works</a>
+            <a href="#for-patients" onClick={(e) => scrollToSection(e, 'for-patients')} className="text-sm font-medium text-gray-600 hover:text-gray-900">Patients & Doctors</a>
+            <a href="#security" onClick={(e) => scrollToSection(e, 'security')} className="text-sm font-medium text-gray-600 hover:text-gray-900">Security</a>
+            <a href="#about-us" onClick={(e) => scrollToSection(e, 'about-us')} className="text-sm font-medium text-gray-600 hover:text-gray-900">About Us</a>
           </div>
 
           {/* Desktop CTA */}
@@ -68,12 +81,11 @@ export default function Navbar() {
       {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-1 shadow-lg">
-          <Link to="#" onClick={() => setMobileOpen(false)} className="px-3 py-2.5 rounded-lg text-sm font-medium text-emerald-600 bg-emerald-50">Home</Link>
-          <Link to="#" onClick={() => setMobileOpen(false)} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">How It Works</Link>
-          <Link to="#" onClick={() => setMobileOpen(false)} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">For Patients</Link>
-          <Link to="#" onClick={() => setMobileOpen(false)} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">For Doctors</Link>
-          <Link to="#" onClick={() => setMobileOpen(false)} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Security</Link>
-          <Link to="#" onClick={() => setMobileOpen(false)} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">About Us</Link>
+          <a href="#home" onClick={(e) => scrollToSection(e, 'home')} className="px-3 py-2.5 rounded-lg text-sm font-medium text-emerald-600 bg-emerald-50">Home</a>
+          <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">How It Works</a>
+          <a href="#for-patients" onClick={(e) => scrollToSection(e, 'for-patients')} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Patients & Doctors</a>
+          <a href="#security" onClick={(e) => scrollToSection(e, 'security')} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Security</a>
+          <a href="#about-us" onClick={(e) => scrollToSection(e, 'about-us')} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">About Us</a>
           <div className="pt-2 mt-1 border-t border-gray-100">
             <Link
               to="/role-selection"

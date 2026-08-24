@@ -22,6 +22,11 @@ export default function NewTreatment({ onBack, patient }: NewTreatmentProps) {
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
 
   const recognitionRef = useRef<any>(null);
+  const transcriptSegmentsRef = useRef<string[]>([]);
+
+  const buildTranscript = (segments: string[], interimSegment = '') => {
+    return [...segments.filter(Boolean), interimSegment.trim()].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+  };
 
   useEffect(() => {
     // Initialize Speech Recognition
@@ -33,11 +38,19 @@ export default function NewTreatment({ onBack, patient }: NewTreatmentProps) {
       recognition.lang = 'en-US';
 
       recognition.onresult = (event: any) => {
-        let currentTranscript = '';
+        let interimTranscript = '';
+
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          currentTranscript += event.results[i][0].transcript;
+          const segment = event.results[i][0].transcript.trim();
+
+          if (event.results[i].isFinal) {
+            transcriptSegmentsRef.current[i] = segment;
+          } else {
+            interimTranscript += `${segment} `;
+          }
         }
-        setTranscript(prev => prev + ' ' + currentTranscript);
+
+        setTranscript(buildTranscript(transcriptSegmentsRef.current, interimTranscript));
       };
 
       recognition.onerror = (event: any) => {
@@ -60,6 +73,7 @@ export default function NewTreatment({ onBack, patient }: NewTreatmentProps) {
       recognitionRef.current?.stop();
       setIsRecording(false);
     } else {
+      transcriptSegmentsRef.current = [];
       setTranscript('');
       recognitionRef.current?.start();
       setIsRecording(true);
