@@ -13,7 +13,7 @@ export default function Footer() {
                 <HeartPulse className="h-6 w-6 text-white" />
               </div>
               <div>
-                <span className="text-xl font-bold text-white tracking-tight">MediRecord</span>
+                <span className="text-xl font-bold text-white tracking-tight">MediTrack</span>
                 <p className="text-[10px] text-emerald-200 font-medium">Your Health. Your Records.</p>
               </div>
             </div>
@@ -23,7 +23,7 @@ export default function Footer() {
               <a href="#" className="text-emerald-200 hover:text-white"><Mail className="h-5 w-5" /></a>
               <a href="#" className="text-emerald-200 hover:text-white"><Globe className="h-5 w-5" /></a>
             </div>
-            <p className="text-sm text-emerald-400">© 2026 MediRecord. All rights reserved.</p>
+            <p className="text-sm text-emerald-400">© 2026 MediTrack. All rights reserved.</p>
           </div>
 
           <div>

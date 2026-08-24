@@ -29,14 +29,13 @@ export default function Navbar() {
               <HeartPulse className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
             <div>
-              <span className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">MediRecord</span>
+              <span className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">MediTrack</span>
               <p className="text-[10px] text-gray-500 font-medium hidden sm:block">Your Health. Your Records. Your Control.</p>
             </div>
           </div>
 
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
-            <a href="#home" onClick={(e) => scrollToSection(e, 'home')} className="text-sm font-medium text-emerald-600 border-b-2 border-emerald-600 pb-1">Home</a>
             <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="text-sm font-medium text-gray-600 hover:text-gray-900">How It Works</a>
             <a href="#for-patients" onClick={(e) => scrollToSection(e, 'for-patients')} className="text-sm font-medium text-gray-600 hover:text-gray-900">Patients & Doctors</a>
             <a href="#security" onClick={(e) => scrollToSection(e, 'security')} className="text-sm font-medium text-gray-600 hover:text-gray-900">Security</a>
@@ -81,7 +80,6 @@ export default function Navbar() {
       {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-1 shadow-lg">
-          <a href="#home" onClick={(e) => scrollToSection(e, 'home')} className="px-3 py-2.5 rounded-lg text-sm font-medium text-emerald-600 bg-emerald-50">Home</a>
           <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">How It Works</a>
           <a href="#for-patients" onClick={(e) => scrollToSection(e, 'for-patients')} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Patients & Doctors</a>
           <a href="#security" onClick={(e) => scrollToSection(e, 'security')} className="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Security</a>

@@ -137,7 +137,7 @@ export default function LandingPage() {
             {/* Background decorative blob */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-emerald-50 rounded-full blur-3xl -z-10"></div>
 
-            <img src="/images/hero/hero.png" alt="MediRecord QR Code" className="relative z-10 w-full object-contain sm:scale-110 lg:scale-125" />
+            <img src="/images/hero/hero.png" alt="MediTrack QR Code" className="relative z-10 w-full object-contain sm:scale-110 lg:scale-125" />
           </div>
         </div>
       </section>
