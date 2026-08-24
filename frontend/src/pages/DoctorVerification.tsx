@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Search, Bell, ChevronDown, LayoutDashboard,
+  Search, Bell, ChevronDown,
   Users, Calendar, FileText, Pill, FolderOpen, Settings,
   ShieldCheck, UploadCloud, Lock, FileBadge, HelpCircle,
-  Clock, LogOut
+  Clock, LogOut, Menu, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
@@ -12,6 +12,7 @@ import api from '../lib/api';
 export default function DoctorVerification() {
   const navigate = useNavigate();
   const { user, login, logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     licenseNumber: '',
@@ -86,22 +87,43 @@ export default function DoctorVerification() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAF9] flex w-full font-sans overflow-hidden text-gray-900">
+    <div className="min-h-screen bg-[#F8FAF9] flex w-full font-sans text-gray-900">
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* Sidebar Navigation */}
-      <aside className="w-[280px] bg-[#fdfdfd] border-r border-gray-100 flex flex-col h-screen shrink-0 relative z-20">
+      <aside className={`
+        fixed lg:sticky top-0 left-0 z-40 lg:z-auto
+        w-[280px] bg-[#fdfdfd] border-r border-gray-100 flex flex-col h-screen shrink-0
+        transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
         {/* Logo */}
-        <div className="p-8 pb-6 border-b border-gray-50/50">
-          <div className="flex items-center gap-2 mb-1">
+        <div className="p-6 lg:p-8 pb-6 border-b border-gray-50/50 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
             <div className="text-[#0b3b2c]">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 <path d="M7.5 12h2l1.5 -3l2.5 6l1.5 -3h2.5" />
               </svg>
+              </div>
+              <span className="text-[22px] font-bold text-[#0b3b2c] tracking-tight">MediTrack</span>
             </div>
-            <span className="text-[22px] font-bold text-[#0b3b2c] tracking-tight">MediTrack</span>
+            <p className="text-[11px] font-medium text-gray-500 pl-10 leading-tight">Digital care. Smart records.</p>
           </div>
-          <p className="text-[11px] font-medium text-gray-500 pl-10 leading-tight">Digital care. Smart records.</p>
+          <button
+            className="lg:hidden p-1.5 text-gray-500 hover:text-gray-700"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Nav Links */}
@@ -189,11 +211,17 @@ export default function DoctorVerification() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-white">
+      <main className="flex-1 flex flex-col min-h-screen overflow-hidden bg-white">
 
         {/* Top Header */}
-        <header className="h-[76px] px-8 flex items-center justify-between border-b border-gray-100 shrink-0">
-          <div className="flex items-center gap-4 flex-1">
+        <header className="h-[76px] px-4 sm:px-8 flex items-center justify-between border-b border-gray-100 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 flex-1">
+            <button
+              className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
             <button className="text-gray-500 hover:text-gray-700">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -222,7 +250,7 @@ export default function DoctorVerification() {
               </div>
               <div className="hidden sm:block">
                 <div className="text-[14px] font-bold text-gray-900 leading-tight">Dr. {user?.name || 'User'}</div>
-                <div className="text-[12px] font-medium text-gray-500">General Physician</div>
+                <div className="text-[12px] font-medium text-gray-500">{user?.specialization || 'Doctor'}</div>
               </div>
               <ChevronDown className="w-4 h-4 text-gray-400" />
             </div>
@@ -230,7 +258,7 @@ export default function DoctorVerification() {
         </header>
 
         {/* Scrollable Form Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-8 sm:px-12 lg:px-20 pb-24">
+        <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8 lg:px-12 xl:px-20 pb-24">
           <div className="max-w-[800px] mx-auto w-full">
 
 

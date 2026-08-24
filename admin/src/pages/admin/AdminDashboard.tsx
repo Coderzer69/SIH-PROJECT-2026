@@ -1,16 +1,11 @@
 import { useState, useEffect } from 'react';
 import { 
   Users, 
-  UserCheck, 
-  Activity, 
   Lock, 
-  ChevronDown, 
   Bell, 
-  ArrowRight,
   TrendingUp,
   Loader2
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import api from '../../lib/api';
 
 const AdminDashboard = () => {

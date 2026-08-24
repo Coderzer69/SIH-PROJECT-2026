@@ -90,13 +90,13 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100/50 text-emerald-800 text-sm font-medium mb-8">
               Digital Treatment & Prescription Management
             </div>
-            <h1 className="text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.1] mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.1] mb-6">
               Your treatment. <br />
               Your record. <br />
               <span className="text-emerald-700">Always with you.</span>
@@ -116,7 +116,7 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            <div className="flex items-center gap-8 text-sm font-medium text-gray-700">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-sm font-medium text-gray-700">
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-emerald-600" />
                 Secure
@@ -133,11 +133,11 @@ export default function LandingPage() {
           </div>
 
           {/* Hero Image Mockup */}
-          <div className="relative mx-auto w-full max-w-lg lg:max-w-xl xl:max-w-2xl">
+          <div className="relative mx-auto w-full max-w-sm sm:max-w-lg lg:max-w-xl xl:max-w-2xl mt-8 lg:mt-0">
             {/* Background decorative blob */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-emerald-50 rounded-full blur-3xl -z-10"></div>
 
-            <img src="/images/hero/hero.png" alt="MediRecord QR Code" className="relative z-10 w-full object-contain scale-110 lg:scale-125" />
+            <img src="/images/hero/hero.png" alt="MediRecord QR Code" className="relative z-10 w-full object-contain sm:scale-110 lg:scale-125" />
           </div>
         </div>
       </section>
@@ -253,7 +253,7 @@ export default function LandingPage() {
 
       {/* Privacy Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="bg-white rounded-[2.5rem] p-12 shadow-sm border border-gray-100 flex flex-col lg:flex-row items-center gap-16">
+          <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 lg:p-12 shadow-sm border border-gray-100 flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
           <div className="flex-1">
             <div className="text-emerald-700 font-bold text-sm tracking-wider uppercase mb-4">Your Privacy, Your Choice</div>
             <h2 className="text-4xl font-bold text-gray-900 mb-6">You control who sees your medical history.</h2>
@@ -308,7 +308,7 @@ export default function LandingPage() {
 
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="bg-[#0b3b2c] rounded-3xl p-12 lg:p-16 flex flex-col md:flex-row items-center justify-between gap-10">
+          <div className="bg-[#0b3b2c] rounded-3xl p-8 sm:p-12 lg:p-16 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-10">
           <div className="max-w-xl">
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">Your next doctor's visit can be simpler.</h2>
             <p className="text-emerald-100 text-lg">

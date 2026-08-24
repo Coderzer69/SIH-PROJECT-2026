@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, MoreVertical, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 

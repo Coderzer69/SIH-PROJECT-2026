@@ -27,13 +27,13 @@ export default function DoctorHistoryRequests({ requests = [], onViewHistory }: 
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] p-8">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] p-5 sm:p-8">
       
       {/* Header & Tabs */}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h2 className="text-[20px] font-bold text-gray-900 mb-6">History Requests</h2>
-          <div className="flex items-center gap-8 border-b border-gray-100">
+          <h2 className="text-[20px] font-bold text-gray-900 mb-5">History Requests</h2>
+          <div className="flex items-center gap-4 sm:gap-8 border-b border-gray-100 overflow-x-auto pb-0">
             <button 
               onClick={() => setTab('ALL')}
               className={`pb-4 font-bold text-[14.5px] flex items-center gap-2 ${tab === 'ALL' ? 'border-b-2 border-[#0b5c46] text-[#0b5c46]' : 'text-gray-500'}`}
@@ -65,24 +65,26 @@ export default function DoctorHistoryRequests({ requests = [], onViewHistory }: 
         </div>
       </div>
 
-      {/* Table Header */}
-      <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-4 py-4 border-b border-gray-100 text-[12.5px] font-bold text-gray-500">
-        <div>Patient</div>
-        <div>Requested On</div>
-        <div>Requested By</div>
-        <div>Reason</div>
-        <div>Expires In</div>
-        <div>Status</div>
-        <div className="text-right">Actions</div>
-      </div>
+      {/* Table — hidden on mobile, shown on md+ */}
+      <div className="hidden md:block">
+        {/* Table Header */}
+        <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-4 py-4 border-b border-gray-100 text-[12.5px] font-bold text-gray-500">
+          <div>Patient</div>
+          <div>Requested On</div>
+          <div>Requested By</div>
+          <div>Reason</div>
+          <div>Expires In</div>
+          <div>Status</div>
+          <div className="text-right">Actions</div>
+        </div>
 
-      {/* Requests List */}
-      <div className="flex flex-col">
-        {filteredRequests.length === 0 ? (
-          <p className="text-gray-500 py-8 text-center">No requests found.</p>
-        ) : (
-          filteredRequests.map((req: any) => (
-            <div key={req.id} className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-4 py-5 border-b border-gray-50 items-center">
+        {/* Requests List — desktop */}
+        <div className="flex flex-col">
+          {filteredRequests.length === 0 ? (
+            <p className="text-gray-500 py-8 text-center">No requests found.</p>
+          ) : (
+            filteredRequests.map((req: any) => (
+              <div key={req.id} className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-4 py-5 border-b border-gray-50 items-center">
               <div className="flex items-center gap-4">
                 <div className="w-[42px] h-[42px] rounded-full bg-gray-100 text-gray-600 font-bold text-[14px] flex items-center justify-center shrink-0 uppercase">
                   {req.patient?.name?.substring(0, 2) || 'PT'}
@@ -141,6 +143,49 @@ export default function DoctorHistoryRequests({ requests = [], onViewHistory }: 
                   </button>
                 )}
               </div>
+            </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Mobile card layout — shown on mobile, hidden on md+ */}
+      <div className="md:hidden flex flex-col gap-4">
+        {filteredRequests.length === 0 ? (
+          <p className="text-gray-500 py-4 text-center">No requests found.</p>
+        ) : (
+          filteredRequests.map((req: any) => (
+            <div key={req.id} className="border border-gray-100 rounded-xl p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-[38px] h-[38px] rounded-full bg-gray-100 text-gray-600 font-bold text-[13px] flex items-center justify-center shrink-0 uppercase">
+                    {req.patient?.name?.substring(0, 2) || 'PT'}
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-bold text-gray-900">{req.patient?.name || 'Unknown Patient'}</p>
+                    <p className="text-[12px] text-gray-500">{new Date(req.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <span className={`px-2.5 py-1 text-[11px] font-bold rounded-md uppercase ${
+                  req.status === 'PENDING' ? 'bg-orange-50 text-orange-600' :
+                  req.status === 'APPROVED' ? 'bg-[#e6f4ef] text-[#0b5c46]' :
+                  'bg-red-50 text-red-600'
+                }`}>
+                  {req.status}
+                </span>
+              </div>
+              <div className="text-[13px] text-gray-600">
+                <span className="font-medium">Reason: </span>{req.reason || 'Medical review'}
+              </div>
+              {req.status === 'APPROVED' && onViewHistory && (
+                <button
+                  onClick={() => onViewHistory(req.patient)}
+                  className="w-full py-2 border border-gray-200 text-gray-700 font-bold text-[13px] rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5 mt-1"
+                >
+                  <Eye className="w-4 h-4" />
+                  View History
+                </button>
+              )}
             </div>
           ))
         )}

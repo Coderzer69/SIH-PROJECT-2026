@@ -135,7 +135,7 @@ export default function NewTreatment({ onBack, patient }: NewTreatmentProps) {
   return (
     <div className="w-full h-full font-sans">
       {/* Header */}
-      <div className="flex items-center gap-6 mb-8">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-6 mb-6 sm:mb-8">
         <button 
           onClick={onBack}
           className="flex items-center gap-2 text-emerald-700 hover:text-emerald-800 transition-colors font-bold text-[15px]"
@@ -143,7 +143,7 @@ export default function NewTreatment({ onBack, patient }: NewTreatmentProps) {
           <ChevronLeft className="w-5 h-5" />
           Back
         </button>
-        <h1 className="text-2xl font-extrabold text-gray-900">New Treatment</h1>
+        <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">New Treatment</h1>
         <div className="flex items-center gap-1.5 px-3 py-1 bg-orange-50 text-orange-600 rounded-md text-[13px] font-bold">
           <div className="w-1.5 h-1.5 rounded-full bg-orange-600"></div>
           Draft
@@ -326,7 +326,7 @@ export default function NewTreatment({ onBack, patient }: NewTreatmentProps) {
             </button>
 
             {/* Bottom Actions */}
-            <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-6 border-t border-gray-100">
               <button 
                 onClick={() => handleSave(false)}
                 className="flex-1 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold text-[15px] rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 shadow-sm"

@@ -14,7 +14,7 @@ export default function ProfileSettings({ onBack, profile }: ProfileSettingsProp
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: profile?.user?.name || user?.name || 'Patient',
-    email: profile?.user?.email || 'patient@email.com',
+    email: profile?.user?.email || user?.email || '',
   });
 
   const handleSave = () => {
@@ -72,9 +72,9 @@ export default function ProfileSettings({ onBack, profile }: ProfileSettingsProp
             )}
             <div className="flex items-center gap-2">
               <span className="text-[14px] text-gray-500 font-medium">Patient ID:</span>
-              <span className="text-[14px] font-bold text-gray-900">{profile?.qrCodeIdentifier || 'P-8F29C7A1'}</span>
+              <span className="text-[14px] font-bold text-gray-900">{profile?.qrCodeIdentifier || '—'}</span>
               <button 
-                onClick={() => navigator.clipboard.writeText(profile?.qrCodeIdentifier || 'P-8F29C7A1')}
+                onClick={() => profile?.qrCodeIdentifier && navigator.clipboard.writeText(profile.qrCodeIdentifier)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <Copy className="w-4 h-4" />

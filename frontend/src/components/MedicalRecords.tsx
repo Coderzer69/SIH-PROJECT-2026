@@ -37,11 +37,11 @@ export default function MedicalRecords({ onBack, treatments, onViewTreatment }: 
         )}
 
         {treatments.map((t) => (
-          <div key={t.id} className="relative mb-8 flex gap-6">
+          <div key={t.id} className="relative mb-6 sm:mb-8 flex gap-4 sm:gap-6">
             <div className="w-4 h-4 rounded-full border-[3px] border-emerald-700 bg-white z-10 shrink-0 mt-[14px]"></div>
             
             {/* Date & Time */}
-            <div className="w-28 shrink-0 pt-2.5">
+            <div className="hidden sm:block w-28 shrink-0 pt-2.5">
               <h3 className="text-[15px] font-bold text-gray-900 mb-1">
                 {new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </h3>
@@ -53,34 +53,38 @@ export default function MedicalRecords({ onBack, treatments, onViewTreatment }: 
             {/* Record Card */}
             <div 
               onClick={() => onViewTreatment(t)}
-              className="flex-1 bg-white border border-gray-100 rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.02)] cursor-pointer hover:shadow-md transition-shadow"
+              className="flex-1 min-w-0 bg-white border border-gray-100 rounded-2xl p-4 sm:p-6 shadow-[0_4px_20px_rgb(0,0,0,0.02)] cursor-pointer hover:shadow-md transition-shadow"
             >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg shrink-0">
+              {/* Mobile date */}
+              <p className="sm:hidden text-[12px] text-gray-500 mb-3">
+                {new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </p>
+              <div className="flex justify-between items-start mb-4 gap-2">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-base sm:text-lg shrink-0">
                     {t.doctor?.name?.charAt(0) || 'D'}
                   </div>
-                  <div>
-                    <h4 className="text-[16px] font-bold text-gray-900">Dr. {t.doctor?.name || 'Unknown'}</h4>
+                  <div className="min-w-0">
+                    <h4 className="text-[15px] sm:text-[16px] font-bold text-gray-900 truncate">Dr. {t.doctor?.name || 'Unknown'}</h4>
                     <p className="text-[13px] text-gray-500">Doctor</p>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-[13px] font-bold rounded-md">
+                <span className="px-2.5 sm:px-3 py-1 bg-emerald-50 text-emerald-700 text-[12px] sm:text-[13px] font-bold rounded-md shrink-0">
                   {t.status}
                 </span>
               </div>
 
               <div className="relative">
-                <h5 className="text-[16px] font-bold text-gray-900 mb-1 pr-8">{t.condition || 'N/A'}</h5>
-                <p className="text-[14px] text-gray-500 mb-4 pr-8">
+                <h5 className="text-[15px] sm:text-[16px] font-bold text-gray-900 mb-1 pr-8">{t.condition || 'N/A'}</h5>
+                <p className="text-[13px] sm:text-[14px] text-gray-500 mb-4 pr-8">
                   Diagnosis: {t.diagnosis || 'Pending'}
                 </p>
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400">
-                  <ChevronRight className="w-6 h-6" />
+                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
               </div>
 
-              <p className="text-[14px] font-medium text-emerald-700">{t.prescriptions?.length || 0} Prescription(s)</p>
+              <p className="text-[13px] sm:text-[14px] font-medium text-emerald-700">{t.prescriptions?.length || 0} Prescription(s)</p>
             </div>
           </div>
         ))}

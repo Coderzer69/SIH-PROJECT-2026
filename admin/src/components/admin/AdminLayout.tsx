@@ -6,8 +6,6 @@ import {
   Activity, 
   FileClock, 
   ShieldAlert, 
-  Settings, 
-  FileBarChart,
   LogOut,
   ShieldCheck
 } from 'lucide-react';

@@ -3,7 +3,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 type User = {
   id: string;
   name: string;
+  email?: string;
   role: 'ADMIN' | 'DOCTOR' | 'PATIENT';
+  specialization?: string;
   verificationStatus?: string;
   documentsSubmitted?: boolean;
 };

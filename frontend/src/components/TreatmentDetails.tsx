@@ -28,7 +28,7 @@ export default function TreatmentDetails({ onBack, treatment }: TreatmentDetails
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] mb-8 overflow-hidden">
         {/* Treatment Date & Status */}
-        <div className="flex justify-between items-center px-8 py-5 border-b border-gray-50">
+        <div className="flex flex-wrap justify-between items-center gap-3 px-5 sm:px-8 py-5 border-b border-gray-50">
           <div className="flex items-center gap-2 text-gray-600">
             <Calendar className="w-5 h-5" />
             <span className="font-medium text-[15px]">
@@ -41,7 +41,7 @@ export default function TreatmentDetails({ onBack, treatment }: TreatmentDetails
         </div>
 
         {/* Doctor Info */}
-        <div className="flex justify-between items-center px-8 py-6 border-b border-gray-50">
+        <div className="flex flex-wrap justify-between items-center gap-4 px-5 sm:px-8 py-6 border-b border-gray-50">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center font-bold text-emerald-700 text-xl">
               {treatment.doctor?.name?.charAt(0) || 'D'}
@@ -54,9 +54,9 @@ export default function TreatmentDetails({ onBack, treatment }: TreatmentDetails
         </div>
 
         {/* Treatment Info */}
-        <div className="px-8 py-6">
-          <div className="grid grid-cols-[150px_1fr] gap-y-6">
-            <div className="text-[15px] font-medium text-gray-500">Condition</div>
+        <div className="px-5 sm:px-8 py-6">
+          <div className="grid grid-cols-1 sm:grid-cols-[150px_1fr] gap-y-4 sm:gap-y-6">
+            <div className="text-[15px] font-medium text-gray-500 sm:pt-0">Condition</div>
             <div className="text-[15px] font-bold text-gray-900">{treatment.condition || 'N/A'}</div>
 
             <div className="text-[15px] font-medium text-gray-500">Diagnosis</div>
@@ -90,7 +90,7 @@ export default function TreatmentDetails({ onBack, treatment }: TreatmentDetails
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-y-6 gap-x-4 mb-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-5 sm:gap-y-6 gap-x-4 mb-2">
                     <div>
                       <p className="text-[13px] font-medium text-gray-500 mb-1">Strength</p>
                       <p className="text-[15px] font-bold text-gray-900">{p.strength || 'N/A'}</p>
@@ -108,11 +108,11 @@ export default function TreatmentDetails({ onBack, treatment }: TreatmentDetails
                       <p className="text-[15px] font-bold text-gray-900">{p.duration || 'N/A'}</p>
                     </div>
 
-                    <div>
+                    <div className="col-span-2 sm:col-span-1">
                       <p className="text-[13px] font-medium text-gray-500 mb-1">Route</p>
                       <p className="text-[15px] font-bold text-gray-900">{p.route || 'N/A'}</p>
                     </div>
-                    <div className="col-span-3">
+                    <div className="col-span-2 sm:col-span-3">
                       <p className="text-[13px] font-medium text-gray-500 mb-1">Instructions</p>
                       <p className="text-[15px] font-bold text-gray-900">{p.instructions || 'N/A'}</p>
                     </div>
