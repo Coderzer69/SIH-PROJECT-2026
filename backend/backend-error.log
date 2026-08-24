@@ -1,0 +1,32 @@
+PrismaClientKnownRequestError: 
+Invalid `prisma.doctorProfile.update()` invocation in
+C:\Users\Urvish Bhardwaj\Music\sih-project-2026\backend\src\controllers\adminController.ts:43:47
+
+  40   return res.status(400).json({ error: 'Invalid verification status' });
+  41 }
+  42 
+→ 43 const doctor = await prisma.doctorProfile.update(
+Foreign key constraint violated: `DoctorProfile_verifiedById_fkey (index)`
+{
+  "name": "PrismaClientKnownRequestError",
+  "code": "P2003",
+  "clientVersion": "5.22.0",
+  "meta": {
+    "modelName": "DoctorProfile",
+    "field_name": "DoctorProfile_verifiedById_fkey (index)"
+  }
+}
+PrismaClientKnownRequestError: 
+Invalid `prisma.doctorProfile.update()` invocation in
+C:\Users\Urvish Bhardwaj\Music\sih-project-2026\backend\src\controllers\adminController.ts:43:47
+
+  40   return res.status(400).json({ error: 'Invalid verification status' });
+  41 }
+  42 
+→ 43 const doctor = await prisma.doctorProfile.update(
+Foreign key constraint violated: `DoctorProfile_verifiedById_fkey (index)`
+    at $n.handleRequestError (C:\Users\Urvish Bhardwaj\Music\sih-project-2026\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Urvish Bhardwaj\Music\sih-project-2026\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Urvish Bhardwaj\Music\sih-project-2026\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\Urvish Bhardwaj\Music\sih-project-2026\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async verifyDoctor (C:\Users\Urvish Bhardwaj\Music\sih-project-2026\backend\src\controllers\adminController.ts:43:20)

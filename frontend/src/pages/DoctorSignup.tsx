@@ -5,11 +5,49 @@ import {
   ShieldCheck, Stethoscope, ChevronDown, FileBadge
 } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
+import api from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function DoctorSignup() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [specialization, setSpecialization] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/register', { 
+        name, email, password, role: 'DOCTOR', specialization, licenseNumber 
+      });
+      if (res.status === 201) {
+        // Log them in automatically
+        const loginRes = await api.post('/auth/login', { email, password });
+        login(loginRes.data.token, loginRes.data.user);
+        navigate('/doctor/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex w-full font-sans bg-white">
@@ -125,8 +163,8 @@ export default function DoctorSignup() {
             <p className="text-gray-500 text-[15px] font-medium">Fill in your details to apply for verification</p>
           </div>
 
-          <form className="w-full flex flex-col gap-5" onSubmit={(e) => { e.preventDefault(); navigate('/doctor/dashboard'); }}>
-
+          <form className="w-full flex flex-col gap-5" onSubmit={handleSignup}>
+            {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
             {/* Row 1: Name and Email */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="flex flex-col gap-1.5">
@@ -136,6 +174,9 @@ export default function DoctorSignup() {
                   <input
                     type="text"
                     placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-[14.5px]"
                   />
                 </div>
@@ -147,6 +188,9 @@ export default function DoctorSignup() {
                   <input
                     type="email"
                     placeholder="Enter your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-[14.5px]"
                   />
                 </div>
@@ -162,6 +206,8 @@ export default function DoctorSignup() {
                   <input
                     type="tel"
                     placeholder="Enter your phone number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-[14.5px]"
                   />
                 </div>
@@ -172,7 +218,9 @@ export default function DoctorSignup() {
                   <Stethoscope className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
                   <select
                     className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-[14.5px] appearance-none bg-white text-gray-600 cursor-pointer"
-                    defaultValue=""
+                    value={specialization}
+                    onChange={(e) => setSpecialization(e.target.value)}
+                    required
                   >
                     <option value="" disabled>Select your specialization</option>
                     <option value="general">General Medicine</option>
@@ -194,6 +242,9 @@ export default function DoctorSignup() {
                 <input
                   type="text"
                   placeholder="Enter your medical license number"
+                  value={licenseNumber}
+                  onChange={(e) => setLicenseNumber(e.target.value)}
+                  required
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-[14.5px]"
                 />
               </div>
@@ -209,6 +260,9 @@ export default function DoctorSignup() {
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
                     className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-[14.5px]"
                   />
                   <button
@@ -228,6 +282,9 @@ export default function DoctorSignup() {
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
                     className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-[14.5px]"
                   />
                   <button
@@ -277,9 +334,10 @@ export default function DoctorSignup() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-[#0b3b2c] hover:bg-[#082a1f] text-white py-3.5 rounded-xl font-bold text-[15px] transition-colors mt-2 shadow-md shadow-emerald-900/10"
+              disabled={loading}
+              className="w-full bg-[#0b3b2c] hover:bg-[#082a1f] text-white py-3.5 rounded-xl font-bold text-[15px] transition-colors mt-2 shadow-md shadow-emerald-900/10 disabled:opacity-70"
             >
-              Create Doctor Account
+              {loading ? 'Creating...' : 'Create Doctor Account'}
             </button>
           </form>
 
@@ -307,9 +365,14 @@ export default function DoctorSignup() {
                   });
                   const data = await res.json();
                   if (res.ok) {
-                    localStorage.setItem('token', data.token);
-                    alert('Successfully logged in with Google!');
-                    navigate('/doctor/dashboard');
+                    login(data.token, data.user);
+                    if (data.user.role === 'DOCTOR') {
+                      navigate('/doctor/dashboard');
+                    } else if (data.user.role === 'PATIENT') {
+                      navigate('/patient/dashboard');
+                    } else if (data.user.role === 'ADMIN') {
+                      navigate('/admin/dashboard');
+                    }
                   } else {
                     alert(data.error || 'Login failed');
                   }

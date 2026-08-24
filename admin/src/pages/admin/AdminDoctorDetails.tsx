@@ -150,6 +150,7 @@ const AdminDoctorDetails = () => {
         <div className="flex border-b border-slate-200 bg-slate-50 px-6">
           {[
             { id: 'profile', label: 'Profile' },
+            { id: 'documents', label: 'Documents' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -185,6 +186,48 @@ const AdminDoctorDetails = () => {
                     <div className="col-span-2 text-sm text-slate-900 font-medium">{item.value || 'N/A'}</div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'documents' && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-4">Verification Documents</h3>
+              
+              {!doctor.verificationDocumentUrl && !doctor.qualificationDocumentUrl && (
+                <div className="text-slate-500 bg-slate-50 p-6 rounded-lg border border-slate-100 text-center">
+                  No documents uploaded by this doctor yet.
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {doctor.verificationDocumentUrl && (
+                  <div className="border border-slate-200 rounded-xl p-6 flex flex-col gap-4">
+                    <h4 className="font-bold text-slate-900">Medical License / Registration</h4>
+                    <a 
+                      href={`http://localhost:3000/uploads/${doctor.verificationDocumentUrl}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-sm font-bold transition-colors text-center border border-emerald-200"
+                    >
+                      View License Document
+                    </a>
+                  </div>
+                )}
+                
+                {doctor.qualificationDocumentUrl && (
+                  <div className="border border-slate-200 rounded-xl p-6 flex flex-col gap-4">
+                    <h4 className="font-bold text-slate-900">Qualification Certificate</h4>
+                    <a 
+                      href={`http://localhost:3000/uploads/${doctor.qualificationDocumentUrl}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-sm font-bold transition-colors text-center border border-emerald-200"
+                    >
+                      View Qualification Document
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           )}

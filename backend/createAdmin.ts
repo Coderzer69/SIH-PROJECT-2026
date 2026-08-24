@@ -6,7 +6,7 @@ async function main() {
   const email = 'admin@meditrack.com';
   const password = 'password123';
   const passwordHash = await bcrypt.hash(password, 10);
-  
+
   const admin = await prisma.user.create({
     data: {
       email,

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { 
-  getDoctors, 
+import {
+  getDoctors,
   verifyDoctor,
   getDashboardStats,
   getPatients,

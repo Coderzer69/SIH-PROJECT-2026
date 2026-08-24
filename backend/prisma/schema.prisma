@@ -14,6 +14,7 @@ enum Role {
 }
 
 enum DoctorVerificationStatus {
+  INCOMPLETE
   PENDING
   APPROVED
   REJECTED
@@ -57,12 +58,14 @@ model User {
 }
 
 model DoctorProfile {
-  id                 String                   @id @default(uuid())
-  userId             String                   @unique
-  specialization     String?
-  licenseNumber      String?                  @unique
-  verificationStatus DoctorVerificationStatus @default(PENDING)
-  verifiedById       String?
+  id                       String                   @id @default(uuid())
+  userId                   String                   @unique
+  specialization           String?
+  licenseNumber            String?                  @unique
+  verificationStatus       DoctorVerificationStatus @default(INCOMPLETE)
+  verifiedById             String?
+  verificationDocumentUrl  String?
+  qualificationDocumentUrl String?
 
   user       User  @relation(fields: [userId], references: [id])
   verifiedBy User? @relation("AdminVerifiedDoctors", fields: [verifiedById], references: [id])

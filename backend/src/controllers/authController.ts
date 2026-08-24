@@ -94,9 +94,24 @@ export const register = async (req: Request, res: Response) => {
       return newUser;
     });
 
+    let verificationStatus;
+    let documentsSubmitted = false;
+    if (role === Role.DOCTOR) {
+      const doc = await prisma.doctorProfile.findUnique({ where: { userId: user.id } });
+      verificationStatus = doc?.verificationStatus;
+      documentsSubmitted = !!doc?.verificationDocumentUrl;
+    }
+
     return res.status(201).json({
       message: 'User registered successfully',
       userId: user.id,
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        ...(verificationStatus && { verificationStatus }),
+        ...(role === Role.DOCTOR && { documentsSubmitted })
+      }
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -121,6 +136,7 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await prisma.user.findUnique({
       where: { email },
+      include: { doctorProfile: true },
     });
 
     if (!user || !user.passwordHash) {
@@ -158,6 +174,10 @@ export const login = async (req: Request, res: Response) => {
         id: user.id,
         name: user.name,
         role: user.role,
+        ...(user.doctorProfile && {
+          verificationStatus: user.doctorProfile.verificationStatus,
+          documentsSubmitted: !!user.doctorProfile.verificationDocumentUrl
+        })
       },
     });
   } catch (error) {
@@ -216,7 +236,14 @@ export const oauthLogin = async (req: Request, res: Response) => {
           { email: email },
         ],
       },
+      include: { doctorProfile: true },
     });
+
+    if (user && role && user.role !== role) {
+      return res.status(400).json({
+        error: `An account with this email already exists as a ${user.role.toLowerCase()}. Please log in or use a different account.`
+      });
+    }
 
     // ==================== NEW GOOGLE USER ====================
 
@@ -277,7 +304,12 @@ export const oauthLogin = async (req: Request, res: Response) => {
           });
         }
 
-        return newUser;
+        const userWithProfile = await prismaTx.user.findUnique({
+          where: { id: newUser.id },
+          include: { doctorProfile: true },
+        });
+
+        return userWithProfile;
       });
     }
 
@@ -311,6 +343,10 @@ export const oauthLogin = async (req: Request, res: Response) => {
         id: user.id,
         name: user.name,
         role: user.role,
+        ...(user.doctorProfile && {
+          verificationStatus: user.doctorProfile.verificationStatus,
+          documentsSubmitted: !!user.doctorProfile.verificationDocumentUrl
+        })
       },
     });
   } catch (error) {

@@ -2,10 +2,39 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
+import api from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/login', { email, password });
+      login(res.data.token, res.data.user);
+      
+      if (res.data.user.role === 'DOCTOR') {
+        navigate('/doctor/dashboard');
+      } else if (res.data.user.role === 'ADMIN') {
+        navigate('/admin/dashboard'); // Or however admin route is configured
+      } else {
+        navigate('/patient/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAF9] flex w-full font-sans">
@@ -60,7 +89,8 @@ export default function LoginPage() {
             <p className="text-gray-500 text-sm font-medium">Log in to your MediTrack account</p>
           </div>
 
-          <form className="flex flex-col gap-5" onSubmit={(e) => { e.preventDefault(); navigate('/patient/dashboard'); }}>
+          <form className="flex flex-col gap-5" onSubmit={handleLogin}>
+            {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
             {/* Email Field */}
             <div className="flex flex-col gap-1.5">
               <label className="text-[13px] font-bold text-gray-800">Email</label>
@@ -69,6 +99,9 @@ export default function LoginPage() {
                 <input 
                   type="email" 
                   placeholder="Enter your email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-[14.5px] transition-colors bg-gray-50/30"
                 />
               </div>
@@ -85,6 +118,9 @@ export default function LoginPage() {
                 <input 
                   type={showPassword ? "text" : "password"} 
                   placeholder="Enter your password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                   className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-[14.5px] transition-colors bg-gray-50/30"
                 />
                 <button 
@@ -104,9 +140,10 @@ export default function LoginPage() {
             {/* Submit Button */}
             <button 
               type="submit" 
-              className="w-full bg-[#0b3b2c] hover:bg-[#082a1f] text-white py-3 rounded-xl font-bold text-[15px] transition-colors mt-2"
+              disabled={loading}
+              className="w-full bg-[#0b3b2c] hover:bg-[#082a1f] text-white py-3 rounded-xl font-bold text-[15px] transition-colors mt-2 disabled:opacity-70"
             >
-              Log In
+              {loading ? 'Logging in...' : 'Log In'}
             </button>
           </form>
 
@@ -134,9 +171,14 @@ export default function LoginPage() {
                     });
                     const data = await res.json();
                     if (res.ok) {
-                      localStorage.setItem('token', data.token);
-                      alert('Successfully logged in with Google!');
-                      navigate('/patient/dashboard');
+                      login(data.token, data.user);
+                      if (data.user.role === 'DOCTOR') {
+                        navigate('/doctor/dashboard');
+                      } else if (data.user.role === 'ADMIN') {
+                        navigate('/admin/dashboard');
+                      } else {
+                        navigate('/patient/dashboard');
+                      }
                     } else {
                       alert(data.error || 'Login failed');
                     }

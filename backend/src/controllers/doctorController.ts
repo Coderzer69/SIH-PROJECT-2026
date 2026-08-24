@@ -2,11 +2,96 @@ import { Request, Response } from 'express';
 import prisma from '../utils/prisma';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { TreatmentStatus } from '@prisma/client';
+import OpenAI from 'openai';
 
 // Helper to check if doctor is verified
 const isDoctorVerified = async (userId: string) => {
   const profile = await prisma.doctorProfile.findUnique({ where: { userId } });
   return profile?.verificationStatus === 'APPROVED';
+};
+
+export const getPatients = async (req: AuthRequest, res: Response) => {
+  try {
+    const doctorId = req.user!.id;
+
+    // Get patients from treatments
+    const treatments = await prisma.treatment.findMany({
+      where: { doctorId },
+      include: {
+        patient: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    // Get patients from access requests (approved or pending)
+    const accessRequests = await prisma.historyAccessRequest.findMany({
+      where: { doctorId },
+      include: {
+        patient: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    const patientMap = new Map();
+    
+    treatments.forEach(t => {
+      if (!patientMap.has(t.patient.id)) {
+        patientMap.set(t.patient.id, t.patient);
+      }
+    });
+
+    accessRequests.forEach(ar => {
+      if (!patientMap.has(ar.patient.id)) {
+        patientMap.set(ar.patient.id, ar.patient);
+      }
+    });
+
+    // Get the patient profile for each patient to include QR code identifier
+    const patients = Array.from(patientMap.values());
+    const patientsWithProfile = await Promise.all(
+      patients.map(async (p) => {
+        const profile = await prisma.patientProfile.findUnique({ where: { userId: p.id } });
+        return {
+          ...p,
+          qrCodeIdentifier: profile?.qrCodeIdentifier,
+        };
+      })
+    );
+
+    res.json(patientsWithProfile);
+  } catch (error) {
+    console.error('Error fetching patients:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getAccessRequests = async (req: AuthRequest, res: Response) => {
+  try {
+    const doctorId = req.user!.id;
+    const requests = await prisma.historyAccessRequest.findMany({
+      where: { doctorId },
+      include: {
+        patient: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const requestsWithProfile = await Promise.all(
+      requests.map(async (r) => {
+        const profile = await prisma.patientProfile.findUnique({ where: { userId: r.patient.id } });
+        return {
+          ...r,
+          patient: {
+            ...r.patient,
+            qrCodeIdentifier: profile?.qrCodeIdentifier,
+          }
+        };
+      })
+    );
+
+    res.json(requestsWithProfile);
+  } catch (error) {
+    console.error('Error fetching access requests:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 export const scanPatientQr = async (req: AuthRequest, res: Response) => {
@@ -121,29 +206,63 @@ export const getPatientHistory = async (req: AuthRequest, res: Response) => {
 
 export const draftFromAudio = async (req: AuthRequest, res: Response) => {
   try {
-    // This endpoint receives text (from speech-to-text API on the frontend)
-    // and returns a structured JSON payload for the doctor to review.
     const { text } = req.body;
 
-    // In a real implementation, this would call an LLM (like Gemini) to extract info.
-    // For MVP, we'll provide a dummy parsed structure based on keywords or just return a generic structure.
-    
-    const draftData = {
-      condition: "Extracted condition from text",
-      symptoms: text,
-      diagnosis: "Pending",
-      doctorNotes: text,
-      prescriptions: [
-        {
-          medicineName: "Extracted Medicine (Example: Paracetamol)",
-          strength: "650mg",
-          dosage: "1 tablet",
-          frequency: "twice daily",
-          duration: "3 days",
-          instructions: "after food"
-        }
-      ]
-    };
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'OpenAI API key is missing in environment variables' });
+    }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const prompt = `
+You are a medical assistant parsing transcribed voice notes from a doctor.
+Extract the following information into a structured JSON format.
+If a field is not mentioned, leave it as an empty string (or empty array for prescriptions).
+
+JSON Schema:
+{
+  "condition": "The main medical condition or chief complaint",
+  "symptoms": "Detailed symptoms mentioned",
+  "diagnosis": "The doctor's diagnosis, if any",
+  "doctorNotes": "Any other notes, observations, or advice",
+  "prescriptions": [
+    {
+      "medicineName": "Name of the medicine",
+      "strength": "Strength (e.g., 500mg)",
+      "dosage": "Dosage (e.g., 1 tablet)",
+      "frequency": "Frequency (e.g., twice a day)",
+      "duration": "Duration (e.g., 5 days)",
+      "route": "Route of administration (e.g., oral)",
+      "instructions": "Specific instructions (e.g., after meals)"
+    }
+  ]
+}
+
+Transcribed Text:
+"${text}"
+`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are a helpful medical assistant that outputs JSON only. Do not wrap with markdown blocks.' },
+        { role: 'user', content: prompt }
+      ],
+      response_format: { type: 'json_object' }
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error('No content returned from OpenAI');
+    }
+
+    const draftData = JSON.parse(content);
 
     res.json({ message: 'Structured data drafted. Please review before confirming.', data: draftData });
   } catch (error) {
@@ -271,6 +390,39 @@ export const editTreatment = async (req: AuthRequest, res: Response) => {
     res.json({ message: 'Treatment updated successfully', treatment: updatedTreatment });
   } catch (error) {
     console.error('Error editing treatment:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const submitVerification = async (req: AuthRequest, res: Response) => {
+  try {
+    const doctorId = req.user!.id;
+    const { licenseNumber, specialization, qualification, registrationYear, issuingAuthority } = req.body;
+    
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    
+    const licenseDoc = files['licenseDocument'] ? files['licenseDocument'][0].filename : null;
+    const qualDoc = files['qualificationDocument'] ? files['qualificationDocument'][0].filename : null;
+
+    if (!licenseNumber || !licenseDoc) {
+      return res.status(400).json({ error: 'License number and license document are required' });
+    }
+
+    const updatedProfile = await prisma.doctorProfile.update({
+      where: { userId: doctorId },
+      data: {
+        licenseNumber,
+        specialization,
+        verificationStatus: 'PENDING',
+        // Since we didn't add qualification/registrationYear/issuingAuthority to schema, we just store what we have
+        ...(licenseDoc && { verificationDocumentUrl: licenseDoc }),
+        ...(qualDoc && { qualificationDocumentUrl: qualDoc }),
+      },
+    });
+
+    res.json({ message: 'Verification documents submitted successfully', profile: updatedProfile });
+  } catch (error) {
+    console.error('Error submitting verification:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

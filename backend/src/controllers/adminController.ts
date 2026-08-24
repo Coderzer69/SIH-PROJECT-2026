@@ -8,7 +8,12 @@ export const getDoctors = async (req: AuthRequest, res: Response) => {
   try {
     const status = req.query.status as DoctorVerificationStatus | undefined;
 
-    const whereClause = status ? { verificationStatus: status } : {};
+    let whereClause: any = {};
+    if (status) {
+      whereClause.verificationStatus = status;
+    } else {
+      whereClause.verificationStatus = { not: DoctorVerificationStatus.INCOMPLETE };
+    }
 
     const doctors = await prisma.doctorProfile.findMany({
       where: whereClause,
@@ -44,15 +49,18 @@ export const verifyDoctor = async (req: AuthRequest, res: Response) => {
     });
 
     res.json({ message: `Doctor status updated to ${status}`, doctor });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error verifying doctor:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    require('fs').writeFileSync('backend-error.log', String(error) + '\n' + JSON.stringify(error, null, 2) + '\n' + error.stack);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 };
 
 export const getDashboardStats = async (req: AuthRequest, res: Response) => {
   try {
-    const totalDoctors = await prisma.doctorProfile.count();
+    const totalDoctors = await prisma.doctorProfile.count({
+      where: { verificationStatus: { not: DoctorVerificationStatus.INCOMPLETE } }
+    });
     const totalPatients = await prisma.patientProfile.count();
     const totalTreatments = await prisma.treatment.count();
     const pendingRequests = await prisma.historyAccessRequest.count({
