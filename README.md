@@ -20,7 +20,7 @@ MediTrack
 ├── admin       # Admin dashboard
 ├── backend     # API & server-side logic
 └── frontend    # User-facing application
-```
+````
 
 ## 🛠️ Tech Stack
 
